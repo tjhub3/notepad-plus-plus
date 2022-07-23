@@ -1730,42 +1730,88 @@ bool Notepad_plus::findInFinderFiles(FindersInfo *findInFolderInfo)
 		progress.open(_findReplaceDlg.getHSelf(), msg.c_str());
 	}
 
-	for (size_t i = 0, updateOnCount = filesPerPercent; i < filesCount; ++i)
-	{
-		if (progress.isCancelled()) break;
+	bool multi_threaded = true;
 
-		bool closeBuf = false;
-		BufferID id = MainFileManager.getBufferFromName(fileNames.at(i).c_str());
-		if (id == BUFFER_INVALID)
-		{
-			id = MainFileManager.loadFile(fileNames.at(i).c_str());
-			closeBuf = true;
+	if (multi_threaded) {
+		typedef enum {
+			READY,
+			RUNNING,
+			DONE
+		} thread_status_e;
+
+		// Multi-threaded search
+		const uint16_t threads = 10;
+		bool search_done = false;
+		vector<ScintillaEditView> _invisibleEditViews(threads);
+		vector<thread_status_e> thread_status(threads, READY);
+
+		for (int i = 0; i < threads; i++) {
+			_invisibleEditViews[i].init(_pPublicInterface->getHinst(), _pPublicInterface->getHSelf());
+			_invisibleEditViews[i].execute(SCI_SETUNDOCOLLECTION);
+			_invisibleEditViews[i].execute(SCI_EMPTYUNDOBUFFER);
+			_invisibleEditViews[i].wrap(false); // Make sure no slow down
 		}
 
-		if (id != BUFFER_INVALID)
-		{
-			Buffer * pBuf = MainFileManager.getBufferByID(id);
-			_invisibleEditView.execute(SCI_SETDOCPOINTER, 0, pBuf->getDocument());
+		// Run until we're done
+		while (!search_done) {
+			if (progress.isCancelled()) break;
 
-			setCodePageForInvisibleView(pBuf);
-
-			findInFolderInfo->_pFileName = fileNames.at(i).c_str();
+			// loop threads
+			for(int i = 0; i < threads; i++) {
+				if (thread_status[i] == READY) {
+					
+				}
 			
-			nbTotal += _findReplaceDlg.processAll(ProcessFindInFinder, &(findInFolderInfo->_findOption), true, findInFolderInfo);
-			
-			if (closeBuf)
-				MainFileManager.closeBuffer(id, _pEditView);
+			}
+		
 		}
-		if (i == updateOnCount)
-		{
-			updateOnCount += filesPerPercent;
-			progress.setPercent(int32_t((i * 100) / filesCount), fileNames.at(i).c_str());
+
+		// Clean up
+		for (int i = 0; i < threads; i++) {
+			_invisibleEditViews[i].destroy();
 		}
-		else
+	
+	}
+	else {
+		for (size_t i = 0, updateOnCount = filesPerPercent; i < filesCount; ++i)
 		{
-			progress.setInfo(fileNames.at(i).c_str());
+			if (progress.isCancelled()) break;
+
+			bool closeBuf = false;
+			BufferID id = MainFileManager.getBufferFromName(fileNames.at(i).c_str());
+			if (id == BUFFER_INVALID)
+			{
+				id = MainFileManager.loadFile(fileNames.at(i).c_str());
+				closeBuf = true;
+			}
+
+			if (id != BUFFER_INVALID)
+			{
+				Buffer* pBuf = MainFileManager.getBufferByID(id);
+				_invisibleEditView.execute(SCI_SETDOCPOINTER, 0, pBuf->getDocument());
+
+				setCodePageForInvisibleView(pBuf);
+
+				findInFolderInfo->_pFileName = fileNames.at(i).c_str();
+
+				nbTotal += _findReplaceDlg.processAll(ProcessFindInFinder, &(findInFolderInfo->_findOption), true, findInFolderInfo);
+
+				if (closeBuf)
+					MainFileManager.closeBuffer(id, _pEditView);
+			}
+			if (i == updateOnCount)
+			{
+				updateOnCount += filesPerPercent;
+				progress.setPercent(int32_t((i * 100) / filesCount), fileNames.at(i).c_str());
+			}
+			else
+			{
+				progress.setInfo(fileNames.at(i).c_str());
+			}
 		}
 	}
+
+
 	progress.close();
 
 	const bool searchedInSelection = false;

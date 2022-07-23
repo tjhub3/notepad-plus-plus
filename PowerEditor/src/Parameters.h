@@ -120,6 +120,9 @@ const int COPYDATA_FILENAMESA = 1;
 const int COPYDATA_FILENAMESW = 2;
 const int COPYDATA_FULL_CMDLINE = 3;
 
+const int DEFAULT_FINDER_THREAD_COUNT = 10;
+const int MAX_FINDER_THREAD_COUNT = 1024; // How many is ok?
+
 #define PURE_LC_NONE	0
 #define PURE_LC_BOL	 1
 #define PURE_LC_WSP	 2
@@ -761,6 +764,11 @@ struct NppGUI final
 	bool _finderLinesAreCurrentlyWrapped = false;
 	bool _finderPurgeBeforeEverySearch = false;
 	bool _finderShowOnlyOneEntryPerFoundLine = true;
+
+	// Multi-threaded search
+	bool _finderMultiThreaded			 = false;
+	bool _finderAutoThreadCount			 = true;
+	int  _finderMultiThreadedThreadCount = DEFAULT_FINDER_THREAD_COUNT;
 
 	int _fileAutoDetection = cdEnabledNew;
 

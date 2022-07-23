@@ -19,6 +19,7 @@
 #include "lesDlgs.h"
 #include "EncodingMapper.h"
 #include "localization.h"
+#include <resource.h>
 
 #define MyGetGValue(rgb)      (LOBYTE((rgb)>>8))
 
@@ -4946,6 +4947,10 @@ intptr_t CALLBACK SearchingSubDlg::run_dlgProc(UINT message, WPARAM wParam, LPAR
 			::SendDlgItemMessage(_hSelf, IDC_CHECK_CONFIRMREPLOPENDOCS, BM_SETCHECK, nppGUI._confirmReplaceInAllOpenDocs, 0);
 			::SendDlgItemMessage(_hSelf, IDC_CHECK_REPLACEANDSTOP, BM_SETCHECK, nppGUI._replaceStopsWithoutFindingNext, 0);
 			::SendDlgItemMessage(_hSelf, IDC_CHECK_SHOWONCEPERFOUNDLINE, BM_SETCHECK, nppGUI._finderShowOnlyOneEntryPerFoundLine, 0);
+			::SendDlgItemMessage(_hSelf, IDC_CHECK_MULTITHREADED, BM_SETCHECK, nppGUI._finderMultiThreaded, 0);
+			::SendDlgItemMessage(_hSelf, IDC_RADIO_THREADCOUNT_AUTO, BM_SETCHECK, nppGUI._finderAutoThreadCount, 0);
+			::SendDlgItemMessage(_hSelf, IDC_RADIO_THREADCOUNT_CUSTOM, BM_SETCHECK, !nppGUI._finderAutoThreadCount, 0);
+			::SetDlgItemText(_hSelf, IDC_EDIT_THREADCOUNT, (LPCWSTR)to_wstring(nppGUI._finderMultiThreadedThreadCount).c_str());
 		}
 		break;
 
@@ -5010,6 +5015,21 @@ intptr_t CALLBACK SearchingSubDlg::run_dlgProc(UINT message, WPARAM wParam, LPAR
 				case IDC_CHECK_SHOWONCEPERFOUNDLINE:
 				{
 					nppGUI._finderShowOnlyOneEntryPerFoundLine = isCheckedOrNot(IDC_CHECK_SHOWONCEPERFOUNDLINE);
+					return TRUE;
+				}
+				break;
+
+				case IDC_CHECK_MULTITHREADED:
+				{
+					nppGUI._finderMultiThreaded = isCheckedOrNot(IDC_CHECK_MULTITHREADED);
+					return TRUE;
+				}
+				break;
+
+				case IDC_RADIO_THREADCOUNT_AUTO:
+				case IDC_RADIO_THREADCOUNT_CUSTOM:
+				{
+					nppGUI._finderAutoThreadCount = isCheckedOrNot(IDC_RADIO_THREADCOUNT_CUSTOM);
 					return TRUE;
 				}
 				break;

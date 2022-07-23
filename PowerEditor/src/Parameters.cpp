@@ -4869,6 +4869,29 @@ void NppParameters::feedGUIParameters(TiXmlNode *node)
 			{
 				_nppGUI._finderShowOnlyOneEntryPerFoundLine = (!lstrcmp(val, TEXT("yes")));
 			}
+
+			val = element->Attribute(TEXT("multiThreadedSearch"));
+			if (val)
+			{
+				_nppGUI._finderMultiThreaded = (!lstrcmp(val, TEXT("yes")));
+			}
+
+			val = element->Attribute(TEXT("multiThreadedAutoThreadCount"));
+			if (val)
+			{
+				_nppGUI._finderAutoThreadCount = (!lstrcmp(val, TEXT("yes")));
+			}
+
+			int valMultiThreadedThreadCount;
+			element->Attribute(TEXT("multiThreadedThreadCount"), &valMultiThreadedThreadCount);
+			if (valMultiThreadedThreadCount > 0 && valMultiThreadedThreadCount < MAX_FINDER_THREAD_COUNT) 
+			{
+				_nppGUI._finderMultiThreadedThreadCount = valMultiThreadedThreadCount;
+			}
+			else // User put invalid data in config
+			{
+				_nppGUI._finderMultiThreadedThreadCount = DEFAULT_FINDER_THREAD_COUNT;
+			}
 		}
 
 		else if (!lstrcmp(nm, TEXT("NewDocDefaultSettings")))
@@ -5486,6 +5509,21 @@ void NppParameters::feedGUIParameters(TiXmlNode *node)
 			const TCHAR* optReplaceStopsWithoutFindingNext = element->Attribute(TEXT("replaceStopsWithoutFindingNext"));
 			if (optReplaceStopsWithoutFindingNext)
 				_nppGUI._replaceStopsWithoutFindingNext = (lstrcmp(optReplaceStopsWithoutFindingNext, TEXT("yes")) == 0);
+
+			const TCHAR* optMultiThreadedSearch = element->Attribute(TEXT("multiThreadedSearch"));
+			if (optMultiThreadedSearch)
+				_nppGUI._finderMultiThreaded = (lstrcmp(optMultiThreadedSearch, TEXT("yes")) == 0);
+
+			const TCHAR* optmultiThreadedAutoThreadCount = element->Attribute(TEXT("multiThreadedAutoThreadCount"));
+			if (optmultiThreadedAutoThreadCount)
+				_nppGUI._finderAutoThreadCount = (lstrcmp(optmultiThreadedAutoThreadCount, TEXT("yes")) == 0);
+
+			int optMultiThreadedThreadCount;
+			element->Attribute(TEXT("multiThreadedThreadCount"), &optMultiThreadedThreadCount);
+			if (optMultiThreadedThreadCount > 0 && optMultiThreadedThreadCount < MAX_FINDER_THREAD_COUNT)
+				_nppGUI._finderMultiThreadedThreadCount = optMultiThreadedThreadCount;
+			else // User put invalid data in config
+				_nppGUI._finderMultiThreadedThreadCount = DEFAULT_FINDER_THREAD_COUNT;
 		}
 		else if (!lstrcmp(nm, TEXT("MISC")))
 		{
@@ -6336,6 +6374,11 @@ void NppParameters::createXmlTreeFromGUIParams()
 		GUIConfigElement->SetAttribute(TEXT("purgeBeforeEverySearch"), pStr);
 		pStr = _nppGUI._finderShowOnlyOneEntryPerFoundLine ? TEXT("yes") : TEXT("no");
 		GUIConfigElement->SetAttribute(TEXT("showOnlyOneEntryPerFoundLine"), pStr);
+		pStr = _nppGUI._finderMultiThreaded ? TEXT("yes") : TEXT("no");
+		GUIConfigElement->SetAttribute(TEXT("multiThreadedSearch"), pStr);
+		pStr = _nppGUI._finderAutoThreadCount ? TEXT("yes") : TEXT("no");
+		GUIConfigElement->SetAttribute(TEXT("multiThreadedAutoThreadCount"), pStr);
+		GUIConfigElement->SetAttribute(TEXT("multiThreadedThreadCount"), _nppGUI._finderAutoThreadCount);
 
 	}
 
@@ -6672,6 +6715,9 @@ void NppParameters::createXmlTreeFromGUIParams()
 		GUIConfigElement->SetAttribute(TEXT("findDlgAlwaysVisible"), _nppGUI._findDlgAlwaysVisible ? TEXT("yes") : TEXT("no"));
 		GUIConfigElement->SetAttribute(TEXT("confirmReplaceInAllOpenDocs"), _nppGUI._confirmReplaceInAllOpenDocs ? TEXT("yes") : TEXT("no"));
 		GUIConfigElement->SetAttribute(TEXT("replaceStopsWithoutFindingNext"), _nppGUI._replaceStopsWithoutFindingNext ? TEXT("yes") : TEXT("no"));
+		GUIConfigElement->SetAttribute(TEXT("multiThreadedSearch"), _nppGUI._finderMultiThreaded ? TEXT("yes") : TEXT("no"));
+		GUIConfigElement->SetAttribute(TEXT("multiThreadedAutoThreadCount"), _nppGUI._finderAutoThreadCount ? TEXT("yes") : TEXT("no"));
+		GUIConfigElement->SetAttribute(TEXT("multiThreadedThreadCount"), _nppGUI._finderMultiThreadedThreadCount);
 	}
 
 	// <GUIConfig name="searchEngine" searchEngineChoice="2" searchEngineCustom="" />
