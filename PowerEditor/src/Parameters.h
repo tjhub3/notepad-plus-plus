@@ -777,6 +777,7 @@ struct NppGUI final
 	RECT _appPos = {};
 
 	RECT _findWindowPos = {};
+	bool _findWindowLessMode = false;
 
 	bool _isMaximized = false;
 	bool _isMinimizedToTray = false;
