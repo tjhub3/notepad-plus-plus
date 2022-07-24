@@ -5030,9 +5030,21 @@ intptr_t CALLBACK SearchingSubDlg::run_dlgProc(UINT message, WPARAM wParam, LPAR
 				case IDC_RADIO_THREADCOUNT_CUSTOM:
 				{
 					nppGUI._finderAutoThreadCount = isCheckedOrNot(IDC_RADIO_THREADCOUNT_CUSTOM);
+					::EnableWindow(::GetDlgItem(_hSelf, IDC_EDIT_THREADCOUNT), nppGUI._finderAutoThreadCount);
 					return TRUE;
 				}
 				break;
+
+				case IDC_EDIT_THREADCOUNT:
+				{
+					nppGUI._finderMultiThreadedThreadCount = ::GetDlgItemInt(_hSelf, IDC_EDIT_THREADCOUNT, NULL, FALSE);
+					if (!nppGUI._snapshotBackupTiming)
+					{
+						nppGUI._snapshotBackupTiming = DEFAULT_FINDER_THREAD_COUNT;
+						::SetDlgItemInt(_hSelf, IDC_EDIT_THREADCOUNT, DEFAULT_FINDER_THREAD_COUNT, FALSE);
+					}
+					return TRUE;
+				}
 
 				default:
 					return FALSE;
